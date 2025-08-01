@@ -70,6 +70,15 @@ demo-modes: ## Demonstrate readonly/readwrite modes
 check-mode: ## Check current MCP mode
 	curl -f http://localhost:8000/mcp/mode
 
+claude-config: ## Generate Claude Desktop config interactively
+	python tools/generate-claude-config.py --interactive
+
+claude-examples: ## Show Claude Desktop config examples
+	python tools/generate-claude-config.py --examples
+
+check-setup: ## Check complete setup (dependencies, config, connections)
+	python tools/check-setup.py
+
 # Development targets
 install-dev-tools: ## Install development tools
 	pip install black flake8 isort pytest-cov

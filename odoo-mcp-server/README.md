@@ -349,12 +349,50 @@ pytest tests/
 - Use HTTPS in production
 - Keep Odoo credentials secure
 
+## Claude Desktop Integration
+
+### Quick Setup
+
+Generate Claude Desktop configuration automatically:
+
+```bash
+# Interactive configuration
+make claude-config
+
+# View examples
+make claude-examples
+```
+
+### Manual Configuration
+
+Add to your `claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "odoo": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-http-client",
+        "http://localhost:8000/mcp"
+      ],
+      "env": {
+        "MCP_HTTP_URL": "http://localhost:8000"
+      }
+    }
+  }
+}
+```
+
+For detailed Claude Desktop setup, see [Claude Desktop Setup Guide](docs/claude-desktop-setup.md).
+
 ## Architecture
 
 ```
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   MCP Client    │───▶│   FastAPI       │───▶│   Odoo Server   │
-│   (AI Model)    │    │   MCP Server    │    │                 │
+│  Claude Desktop │───▶│   FastAPI       │───▶│   Odoo Server   │
+│   MCP Client    │    │   MCP Server    │    │                 │
 └─────────────────┘    └─────────────────┘    └─────────────────┘
                               │
                        ┌─────────────────┐
