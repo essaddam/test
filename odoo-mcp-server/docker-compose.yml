@@ -1,0 +1,62 @@
+version: '3.8'
+
+services:
+  odoo-mcp-server:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - ODOO_URL=${ODOO_URL:-http://localhost:8069}
+      - ODOO_DATABASE=${ODOO_DATABASE:-odoo}
+      - ODOO_USERNAME=${ODOO_USERNAME:-admin}
+      - ODOO_PASSWORD=${ODOO_PASSWORD:-admin}
+      - SERVER_HOST=0.0.0.0
+      - SERVER_PORT=8000
+      - DEBUG=${DEBUG:-false}
+    volumes:
+      - ./logs:/app/logs
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - odoo-mcp-network
+
+  # Example Odoo service (optional)
+  # odoo:
+  #   image: odoo:16.0
+  #   depends_on:
+  #     - db
+  #   ports:
+  #     - "8069:8069"
+  #   environment:
+  #     - HOST=db
+  #     - USER=odoo
+  #     - PASSWORD=odoo
+  #   volumes:
+  #     - odoo-data:/var/lib/odoo
+  #   networks:
+  #     - odoo-mcp-network
+
+  # # PostgreSQL database for Odoo (optional)
+  # db:
+  #   image: postgres:15
+  #   environment:
+  #     - POSTGRES_DB=postgres
+  #     - POSTGRES_USER=odoo
+  #     - POSTGRES_PASSWORD=odoo
+  #   volumes:
+  #     - postgres-data:/var/lib/postgresql/data
+  #   networks:
+  #     - odoo-mcp-network
+
+networks:
+  odoo-mcp-network:
+    driver: bridge
+
+volumes:
+  odoo-data:
+  postgres-data:

@@ -1,0 +1,1 @@
+# Odoo MCP Server Package
