@@ -29,6 +29,7 @@ class Config:
         # MCP settings
         self.mcp_server_name = os.getenv("MCP_SERVER_NAME", "odoo-mcp-server")
         self.mcp_server_version = os.getenv("MCP_SERVER_VERSION", "1.0.0")
+        self.mcp_mode = os.getenv("MCP_MODE", "readwrite").lower()  # readonly, readwrite
         
         # Logging settings
         self.log_level = os.getenv("LOG_LEVEL", "INFO").upper()
@@ -73,7 +74,11 @@ class Config:
         if not self.odoo_url.startswith(("http://", "https://")):
             raise ValueError("ODOO_URL must start with http:// or https://")
         
-        logger.info("Configuration validation passed")
+        # Validate MCP mode
+        if self.mcp_mode not in ["readonly", "readwrite"]:
+            raise ValueError("MCP_MODE must be 'readonly' or 'readwrite'")
+        
+        logger.info(f"Configuration validation passed - MCP Mode: {self.mcp_mode}")
     
     def _configure_logging(self):
         """Configure logging based on settings"""
@@ -106,8 +111,17 @@ class Config:
         """Get MCP server configuration"""
         return {
             "name": self.mcp_server_name,
-            "version": self.mcp_server_version
+            "version": self.mcp_server_version,
+            "mode": self.mcp_mode
         }
+    
+    def is_readonly_mode(self) -> bool:
+        """Check if server is in readonly mode"""
+        return self.mcp_mode == "readonly"
+    
+    def is_readwrite_mode(self) -> bool:
+        """Check if server is in readwrite mode"""
+        return self.mcp_mode == "readwrite"
     
     def to_dict(self) -> dict:
         """Convert configuration to dictionary (excluding sensitive data)"""
@@ -120,6 +134,7 @@ class Config:
             "debug": self.debug,
             "mcp_server_name": self.mcp_server_name,
             "mcp_server_version": self.mcp_server_version,
+            "mcp_mode": self.mcp_mode,
             "log_level": self.log_level,
             "cors_origins": self.cors_origins,
             "rate_limit_requests": self.rate_limit_requests,

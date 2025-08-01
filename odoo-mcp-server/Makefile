@@ -64,6 +64,12 @@ health-check: ## Check server health
 example: ## Run example client
 	python examples/client_example.py
 
+demo-modes: ## Demonstrate readonly/readwrite modes
+	python examples/mode_demo.py
+
+check-mode: ## Check current MCP mode
+	curl -f http://localhost:8000/mcp/mode
+
 # Development targets
 install-dev-tools: ## Install development tools
 	pip install black flake8 isort pytest-cov

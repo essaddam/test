@@ -31,7 +31,7 @@ async def lifespan(app: FastAPI):
     # Initialize components
     config = Config()
     odoo_client = OdooClient(config)
-    mcp_server = MCPServer(odoo_client)
+    mcp_server = MCPServer(odoo_client, config)
     
     # Start MCP server
     await mcp_server.initialize()
@@ -84,6 +84,14 @@ class OdooQuery(BaseModel):
 @app.get("/health")
 async def health_check():
     return {"status": "healthy", "service": "odoo-mcp-server"}
+
+# Mode and permissions endpoint
+@app.get("/mcp/mode")
+async def get_mcp_mode():
+    if not mcp_server:
+        raise HTTPException(status_code=500, detail="MCP server not initialized")
+    
+    return mcp_server.permission_manager.get_mode_info()
 
 # MCP protocol endpoints
 @app.post("/mcp/initialize")

@@ -5,9 +5,11 @@ A FastAPI-based Model Context Protocol (MCP) server for Odoo integration with HT
 ## Features
 
 - **MCP Protocol Support**: Full implementation of the Model Context Protocol for AI model integration
+- **Operating Modes**: Readonly and readwrite modes for controlled access
 - **HTTP Streaming**: Real-time streaming of large data responses
 - **WebSocket Support**: Real-time bidirectional communication
-- **Comprehensive Odoo Integration**: Support for all major Odoo operations (CRUD, reports, workflows)
+- **Comprehensive Odoo Integration**: Support for all major Odoo operations (CRUD, reports, workflows)  
+- **Permission System**: Advanced permission management based on operation modes
 - **Async/Await**: Built with modern Python async/await patterns for high performance
 - **Security**: API key authentication and IP filtering support
 - **Rate Limiting**: Configurable request rate limiting
@@ -52,7 +54,36 @@ ODOO_PASSWORD=admin
 SERVER_HOST=0.0.0.0
 SERVER_PORT=8000
 DEBUG=false
+
+# MCP Mode (readonly or readwrite)
+MCP_MODE=readwrite
 ```
+
+## Operating Modes
+
+The server supports two operating modes for controlled access:
+
+### 🔒 Readonly Mode
+```env
+MCP_MODE=readonly
+```
+- **Allowed**: Search, read operations, reports generation
+- **Forbidden**: Create, update, delete operations
+- **Use cases**: Dashboards, analytics, public APIs, demo environments
+
+### 🔓 Readwrite Mode  
+```env
+MCP_MODE=readwrite
+```
+- **Allowed**: All operations (CRUD, reports, method calls)
+- **Use cases**: Full integrations, data synchronization, automated workflows
+
+### Mode Verification
+```bash
+curl http://localhost:8000/mcp/mode
+```
+
+For detailed information, see [Operating Modes Documentation](docs/modes.md).
 
 ## API Endpoints
 

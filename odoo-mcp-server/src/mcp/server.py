@@ -4,13 +4,17 @@ import logging
 from typing import Dict, List, Any, Optional, AsyncGenerator
 from datetime import datetime
 
+from utils.permissions import PermissionManager, PermissionError
+
 logger = logging.getLogger(__name__)
 
 class MCPServer:
     """Model Context Protocol server for Odoo integration"""
     
-    def __init__(self, odoo_client):
+    def __init__(self, odoo_client, config):
         self.odoo_client = odoo_client
+        self.config = config
+        self.permission_manager = PermissionManager(config.mcp_mode)
         self.tools = {}
         self.resources = {}
         self.initialized = False
@@ -20,7 +24,8 @@ class MCPServer:
         await self._register_tools()
         await self._register_resources()
         self.initialized = True
-        logger.info("MCP Server initialized with tools and resources")
+        mode_info = self.permission_manager.get_mode_info()
+        logger.info(f"MCP Server initialized in {mode_info['mode']} mode with {len(mode_info['allowed_tools'])} tools")
     
     async def _register_tools(self):
         """Register available MCP tools"""
@@ -148,7 +153,7 @@ class MCPServer:
     
     async def get_capabilities(self) -> Dict[str, Any]:
         """Get MCP server capabilities"""
-        return {
+        capabilities = {
             "tools": True,
             "resources": True,
             "prompts": False,
@@ -157,15 +162,25 @@ class MCPServer:
                 "streaming": True
             }
         }
+        
+        # Ajouter les informations de mode
+        capabilities["mode"] = self.permission_manager.get_mode_info()
+        
+        return capabilities
     
     async def list_tools(self) -> List[Dict[str, Any]]:
-        """List available tools"""
-        return list(self.tools.values())
+        """List available tools based on current mode"""
+        allowed_tools = self.permission_manager.get_allowed_tools()
+        return [tool for tool in self.tools.values() if tool["name"] in allowed_tools]
     
     async def call_tool(self, name: str, arguments: Dict[str, Any]) -> Dict[str, Any]:
         """Call a specific tool"""
         if name not in self.tools:
             raise ValueError(f"Unknown tool: {name}")
+        
+        # Vérifier les permissions
+        if not self.permission_manager.validate_tool_call(name, arguments):
+            raise PermissionError(f"Tool {name} not allowed in {self.config.mcp_mode} mode")
         
         try:
             if name == "odoo_search":
